@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+  ClientCidr:
+    Type: String
+    Default: "0.0.0.0/0"
+
+
+Resources:
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupDescription: "for client ssh connection"
+      SecurityGroupIngress:
+        - CidrIp: !Ref ClientCidr
+          IpProtocol: TCP
+          FromPort: 22
+          ToPort: 22
+
+
+Outputs:
+  EC2SecurityGroupId:
+    Value: !Ref EC2SecurityGroup

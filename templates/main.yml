@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  TemplateBucket:
+    Type: String
+    Default: "sample"
+  ClientCidr:
+    Type: String
+    Default: "?.?.?.?/?"
+  KeyName:
+    Type: String
+    Default: "sample"
+
+
+Resources:
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/vpc.yml
+      Parameters:
+        VPCCIDR: "172.32.0.0/21"
+        SubnetCIDR:  "172.32.0.0/24"
+
+  SG:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/sg.yml
+      Parameters:
+        VPCId: !GetAtt VPC.Outputs.VPCId
+        ClientCidr: !Ref ClientCidr
+
+  EC2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/ec2.yml
+      Parameters:
+        # This IamgeID was released as of 2020/02/28!!!
+        ImageId: "ami-0af1df87db7b650f4"
+        InstanceType: "t2.micro"
+        SubnetId: !GetAtt VPC.Outputs.SubnetId
+        SecurityGroupId: !GetAtt SG.Outputs.EC2SecurityGroupId
+        KeyName: !Ref KeyName
